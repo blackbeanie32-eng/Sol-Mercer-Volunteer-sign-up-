@@ -1,0 +1,1375 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SOL — Fundraising Tracker</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --paper:#F2F4EE;
+  --card:#FFFFFF;
+  --ink:#1C2331;
+  --dusk:#1E2749;
+  --dusk-2:#28345E;
+  --dusk-3:#3A4A8A;
+  --gold:#E9A23B;
+  --gold-light:#F6C453;
+  --coral:#E1594A;
+  --teal:#2F8F7A;
+  --sand:#DCD3BE;
+  --hair:#E7E1D2;
+  --muted:#6B7280;
+}
+*{box-sizing:border-box;}
+body{
+  margin:0;
+  font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;
+  color:var(--ink);
+  background:var(--paper);
+  display:flex;
+  min-height:100vh;
+}
+h1,h2,h3{font-family:'Fraunces',Georgia,serif;font-weight:600;margin:0 0 .25rem;}
+.mono{font-family:'IBM Plex Mono',monospace;}
+button{font-family:inherit;}
+
+/* ---- nav rail ---- */
+.nav{
+  width:230px;
+  min-width:230px;
+  background:var(--dusk);
+  color:#EDEFF7;
+  padding:1.5rem 1rem;
+  display:flex;
+  flex-direction:column;
+  position:sticky;
+  top:0;
+  height:100vh;
+}
+.nav-brand{padding:.25rem .5rem 1.5rem;}
+.nav-brand .sun{width:34px;height:34px;margin-bottom:.5rem;}
+.nav-brand h1{font-size:1.5rem;color:#fff;letter-spacing:.02em;}
+.nav-brand p{margin:.15rem 0 0;font-size:.75rem;color:#B9C1E6;}
+.nav-items{list-style:none;padding:0;margin:.5rem 0 0;flex:1;}
+.nav-items li{margin-bottom:.15rem;}
+.nav-items button{
+  width:100%;
+  text-align:left;
+  background:none;
+  border:none;
+  color:#CBD2EF;
+  padding:.65rem .75rem;
+  border-radius:8px;
+  font-size:.9rem;
+  font-weight:500;
+  cursor:pointer;
+  border-left:3px solid transparent;
+}
+.nav-items button:hover{background:var(--dusk-2);color:#fff;}
+.nav-items button.active{background:var(--dusk-2);color:#fff;border-left-color:var(--gold);}
+.nav-foot{font-size:.7rem;color:#8D96C4;padding:.5rem;line-height:1.5;}
+
+/* ---- main ---- */
+.main{flex:1;padding:2.25rem 2.75rem;max-width:1180px;}
+.tab{display:none;}
+.tab.active{display:block;}
+.page-head{display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:1.5rem;flex-wrap:wrap;gap:1rem;}
+.page-head p{margin:.25rem 0 0;color:var(--muted);font-size:.9rem;}
+
+/* ---- cards / grids ---- */
+.card{background:var(--card);border:1px solid var(--hair);border-radius:12px;padding:1.25rem 1.4rem;margin-bottom:1.25rem;}
+.stat-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:.9rem;margin-bottom:1.25rem;}
+.stat{background:var(--card);border:1px solid var(--hair);border-radius:10px;padding:.9rem 1rem;}
+.stat .label{font-size:.7rem;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;font-weight:600;}
+.stat .value{font-family:'IBM Plex Mono',monospace;font-size:1.4rem;font-weight:600;margin-top:.2rem;}
+
+/* ---- tables ---- */
+table{width:100%;border-collapse:collapse;font-size:.85rem;}
+th{text-align:left;color:var(--muted);font-weight:600;font-size:.7rem;text-transform:uppercase;letter-spacing:.04em;border-bottom:1px solid var(--sand);padding:.5rem .6rem;}
+td{padding:.6rem .6rem;border-bottom:1px solid var(--hair);vertical-align:top;}
+tr:last-child td{border-bottom:none;}
+.table-wrap{overflow-x:auto;}
+.empty-row td{color:var(--muted);font-style:italic;text-align:center;padding:1.5rem;}
+
+/* ---- badges ---- */
+.badge{display:inline-block;padding:.2rem .65rem;border-radius:999px;font-size:.72rem;font-weight:600;white-space:nowrap;}
+.status-ontrack{background:#DFF0EA;color:#1F6E58;}
+.status-attention{background:#FBEEDB;color:#8F5E15;}
+.status-behind{background:#FBE5E2;color:#A83A2B;}
+.status-completed{background:#E5EAFB;color:#2F3F9C;}
+.status-notstarted{background:#ECECE6;color:#68675F;}
+.status-closed{background:#E2E2DC;color:#57564E;}
+
+/* ---- forms ---- */
+label{font-size:.78rem;font-weight:600;color:var(--ink);margin-bottom:.3rem;display:block;}
+input,select,textarea{
+  width:100%;padding:.55rem .7rem;border:1px solid var(--sand);border-radius:8px;
+  font-family:inherit;font-size:.88rem;background:#fff;color:var(--ink);
+}
+input:focus,select:focus,textarea:focus{outline:2px solid var(--gold-light);outline-offset:1px;border-color:var(--gold);}
+.field{margin-bottom:1rem;}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:1rem;}
+.form-grid.three{grid-template-columns:1fr 1fr 1fr;}
+textarea{resize:vertical;min-height:70px;}
+
+/* ---- buttons ---- */
+.btn{padding:.6rem 1.15rem;border-radius:8px;border:1px solid var(--dusk);background:var(--dusk);color:#fff;font-weight:600;font-size:.85rem;cursor:pointer;}
+.btn:hover{background:var(--dusk-2);}
+.btn.secondary{background:transparent;color:var(--dusk);border:1px solid var(--sand);}
+.btn.secondary:hover{background:#fff;border-color:var(--dusk);}
+.btn.gold{background:var(--gold);border-color:var(--gold);color:#3A2205;}
+.btn.gold:hover{background:var(--gold-light);}
+.btn.danger{background:transparent;color:var(--coral);border:1px solid var(--coral);}
+.btn-row{display:flex;gap:.6rem;flex-wrap:wrap;margin-top:.5rem;}
+
+/* ---- misc ---- */
+.hint{font-size:.78rem;color:var(--muted);margin-top:.3rem;}
+.section-title{font-size:.75rem;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);font-weight:700;margin:1.75rem 0 .6rem;}
+.section-title:first-child{margin-top:0;}
+.divider{border:none;border-top:1px solid var(--hair);margin:1.25rem 0;}
+.pill-row{display:flex;gap:.4rem;flex-wrap:wrap;margin-top:.4rem;}
+.pill{background:var(--paper);border:1px solid var(--sand);border-radius:999px;padding:.25rem .7rem;font-size:.75rem;color:var(--ink);}
+.link-btn{background:none;border:none;color:var(--dusk);text-decoration:underline;cursor:pointer;font-size:.85rem;padding:0;}
+.alert-box{border-radius:10px;padding:.85rem 1rem;margin-bottom:.7rem;font-size:.85rem;border-left:4px solid;}
+.alert-milestone{background:#FBF6E4;border-color:var(--gold);}
+.alert-deadline{background:#FBEEE9;border-color:var(--coral);}
+.alert-behind{background:#FBE5E2;border-color:var(--coral);}
+.rank-list{list-style:none;padding:0;margin:0;}
+.rank-item{border:1px solid var(--hair);border-radius:10px;padding:1rem 1.1rem;margin-bottom:.8rem;}
+.rank-item h4{margin:0 0 .25rem;font-family:'Fraunces',serif;font-size:1.02rem;font-weight:600;}
+.rank-item .why{font-size:.85rem;color:var(--muted);margin-bottom:.5rem;}
+.rank-num{display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:50%;background:var(--dusk);color:#fff;font-size:.72rem;font-weight:700;margin-right:.5rem;}
+.detail-panel{border:1px solid var(--hair);border-radius:12px;padding:1.4rem;background:var(--card);margin-top:1rem;}
+.toast{position:fixed;bottom:20px;right:20px;background:var(--dusk);color:#fff;padding:.75rem 1.1rem;border-radius:8px;font-size:.85rem;box-shadow:0 6px 18px rgba(0,0,0,.18);opacity:0;transform:translateY(8px);transition:opacity .25s, transform .25s;pointer-events:none;z-index:50;}
+.toast.show{opacity:1;transform:translateY(0);}
+@media(max-width:820px){
+  body{flex-direction:column;}
+  .nav{width:100%;height:auto;position:relative;flex-direction:row;overflow-x:auto;align-items:center;}
+  .nav-items{display:flex;}
+  .nav-brand{padding:.25rem .75rem;}
+  .form-grid,.form-grid.three{grid-template-columns:1fr;}
+  .main{padding:1.5rem;}
+}
+</style>
+</head>
+<body>
+
+<nav class="nav">
+  <div class="nav-brand">
+    <svg class="sun" viewBox="0 0 40 40"><circle cx="20" cy="20" r="9" fill="#E9A23B"/><g stroke="#F6C453" stroke-width="2.5" stroke-linecap="round"><line x1="20" y1="2" x2="20" y2="7"/><line x1="20" y1="33" x2="20" y2="38"/><line x1="2" y1="20" x2="7" y2="20"/><line x1="33" y1="20" x2="38" y2="20"/><line x1="7.3" y1="7.3" x2="10.8" y2="10.8"/><line x1="29.2" y1="29.2" x2="32.7" y2="32.7"/><line x1="7.3" y1="32.7" x2="10.8" y2="29.2"/><line x1="29.2" y1="10.8" x2="32.7" y2="7.3"/></g></svg>
+    <h1>SOL</h1>
+    <p>Fundraising tracker</p>
+  </div>
+  <ul class="nav-items">
+    <li><button data-tab="dashboard" class="active">Dashboard</button></li>
+    <li><button data-tab="fundraisers">Fundraisers</button></li>
+    <li><button data-tab="activity">Log activity</button></li>
+    <li><button data-tab="strategy">Strategy advisor</button></li>
+    <li><button data-tab="ai">AI assistant</button></li>
+    <li><button data-tab="history">History</button></li>
+    <li><button data-tab="data">Data and backup</button></li>
+  </ul>
+  <div class="nav-foot">Core tracking runs entirely in your browser — no account, no server, no cost. AI features are optional and use your own API key. Export a backup before you close the tab.</div>
+</nav>
+
+<main class="main">
+
+  <!-- DASHBOARD -->
+  <section id="tab-dashboard" class="tab active">
+    <div class="page-head">
+      <div><h2>Overall fundraising</h2><p>Everything SOL is currently running, at a glance.</p></div>
+      <button class="btn gold" onclick="goTo('fundraisers');openNewFundraiser();">+ New fundraiser</button>
+    </div>
+    <div id="dashAlerts"></div>
+    <div class="stat-grid" id="dashStats"></div>
+    <div class="card">
+      <h3 style="font-size:1.05rem;margin-bottom:.9rem;">Active fundraisers</h3>
+      <div class="table-wrap"><table id="dashActiveTable"></table></div>
+    </div>
+    <div class="card">
+      <h3 style="font-size:1.05rem;margin-bottom:.9rem;">Performance summary</h3>
+      <div class="stat-grid" id="dashPerf" style="margin-bottom:0;"></div>
+    </div>
+  </section>
+
+  <!-- FUNDRAISERS -->
+  <section id="tab-fundraisers" class="tab">
+    <div class="page-head">
+      <div><h2>Fundraisers</h2><p>Every campaign SOL has set up, with live totals.</p></div>
+      <button class="btn gold" onclick="openNewFundraiser()">+ New fundraiser</button>
+    </div>
+    <div class="card" id="newFundraiserForm" style="display:none;">
+      <h3 style="font-size:1.05rem;">New fundraiser</h3>
+      <div class="form-grid">
+        <div class="field"><label>Fundraiser name</label><input id="nf-name" placeholder="Fall coat drive"></div>
+        <div class="field"><label>Event / project it supports</label><input id="nf-event" placeholder="Winter shelter program"></div>
+        <div class="field"><label>Fundraising goal ($)</label><input id="nf-goal" type="number" min="0" placeholder="5000"></div>
+        <div class="field"><label>Starting amount already raised ($)</label><input id="nf-starting" type="number" min="0" value="0"></div>
+        <div class="field"><label>Start date</label><input id="nf-start" type="date"></div>
+        <div class="field"><label>Deadline</label><input id="nf-deadline" type="date"></div>
+        <div class="field"><label>Target audience</label>
+          <select id="nf-audience"><option>Existing donor base</option><option>Local community / neighbors</option><option>Local businesses</option><option>Students, families & school community</option><option>Broad / general public</option></select>
+        </div>
+        <div class="field"><label>Geographic target</label>
+          <select id="nf-geo"><option>Hyperlocal (single neighborhood)</option><option>City-wide</option><option>Regional</option><option>National / online</option></select>
+        </div>
+        <div class="field"><label>Available budget</label>
+          <select id="nf-budget"><option>Minimal (under $100)</option><option>Moderate ($100–$500)</option><option>Substantial (over $500)</option></select>
+        </div>
+        <div class="field"><label>Available volunteers / staff</label>
+          <select id="nf-volunteers"><option>Just 1–2 people</option><option>Small team (3–10)</option><option>Large team (10+)</option></select>
+        </div>
+        <div class="field" style="grid-column:1/-1;"><label>Purpose of the funds</label><textarea id="nf-purpose" placeholder="What the money will pay for"></textarea></div>
+        <div class="field" style="grid-column:1/-1;"><label>Previous fundraising results (optional)</label><textarea id="nf-previous" placeholder="e.g. last year's coat drive raised $3,200"></textarea></div>
+      </div>
+      <div class="btn-row">
+        <button class="btn gold" onclick="saveNewFundraiser()">Create fundraiser</button>
+        <button class="btn secondary" onclick="closeNewFundraiser()">Cancel</button>
+      </div>
+    </div>
+    <div class="card">
+      <div class="table-wrap"><table id="fundraisersTable"></table></div>
+    </div>
+    <div id="fundraiserDetail"></div>
+  </section>
+
+  <!-- ACTIVITY LOG -->
+  <section id="tab-activity" class="tab">
+    <div class="page-head">
+      <div><h2>Log activity</h2><p>Record a donation, sponsorship, or expense against a fundraiser.</p></div>
+    </div>
+    <div class="card">
+      <div class="pill-row" style="margin-bottom:1rem;">
+        <button class="btn" id="logTypeTxnBtn" onclick="setLogType('txn')">Record income</button>
+        <button class="btn secondary" id="logTypeExpBtn" onclick="setLogType('exp')">Record expense</button>
+      </div>
+      <div id="logForm"></div>
+    </div>
+    <div class="card">
+      <h3 style="font-size:1.05rem;margin-bottom:.9rem;">Recent activity</h3>
+      <div class="field" style="max-width:280px;"><label>Filter by fundraiser</label><select id="activityFilter" onchange="renderActivity()"></select></div>
+      <div class="table-wrap"><table id="activityTable"></table></div>
+    </div>
+  </section>
+
+  <!-- STRATEGY ADVISOR -->
+  <section id="tab-strategy" class="tab">
+    <div class="page-head">
+      <div><h2>Strategy advisor</h2><p>Rule-based planning guidance — not AI, runs instantly and offline, free forever.</p></div>
+    </div>
+    <div class="card">
+      <div class="form-grid three">
+        <div class="field"><label>Use details from an existing fundraiser (optional)</label>
+          <select id="sa-fundraiser" onchange="prefillStrategyFromFundraiser()"><option value="">— start from scratch —</option></select>
+        </div>
+        <div class="field"><label>Fundraising goal</label>
+          <select id="sa-goal"><option value="small">Under $1,000</option><option value="medium">$1,000–$5,000</option><option value="large">$5,000–$20,000</option><option value="major">Over $20,000</option></select>
+        </div>
+        <div class="field"><label>Time available</label>
+          <select id="sa-time"><option value="veryshort">Under 2 weeks</option><option value="short">2–4 weeks</option><option value="standard">1–3 months</option><option value="extended">3+ months</option></select>
+        </div>
+        <div class="field"><label>Target audience</label>
+          <select id="sa-audience"><option>Existing donor base</option><option>Local community / neighbors</option><option>Local businesses</option><option>Students, families & school community</option><option>Broad / general public</option></select>
+        </div>
+        <div class="field"><label>Geographic target</label>
+          <select id="sa-geo"><option>Hyperlocal (single neighborhood)</option><option>City-wide</option><option>Regional</option><option>National / online</option></select>
+        </div>
+        <div class="field"><label>Available budget</label>
+          <select id="sa-budget"><option>Minimal (under $100)</option><option>Moderate ($100–$500)</option><option>Substantial (over $500)</option></select>
+        </div>
+        <div class="field"><label>Available volunteers / staff</label>
+          <select id="sa-volunteers"><option>Just 1–2 people</option><option>Small team (3–10)</option><option>Large team (10+)</option></select>
+        </div>
+        <div class="field"><label>Time of year</label>
+          <select id="sa-season"><option value="winter-holiday">Nov–Dec (holiday season)</option><option value="new-year">Jan–Feb</option><option value="spring">Mar–May</option><option value="summer">Jun–Aug</option><option value="fall">Sep–Oct</option></select>
+        </div>
+      </div>
+      <div class="btn-row">
+        <button class="btn gold" onclick="runStrategyAdvisor()">Get recommendation</button>
+        <button class="btn secondary" onclick="runAiStrategyEnhance()">✦ Enhance with AI research</button>
+      </div>
+      <p class="hint">The recommendation above is instant, offline, and free. "Enhance with AI" sends this same context to an AI model for a second opinion — it needs a (free) API key set up on the AI assistant tab. Live web search is only used in Anthropic mode; the default free Gemini mode reasons from its own knowledge.</p>
+    </div>
+    <div id="strategyOutput"></div>
+    <div id="aiStrategyOutput"></div>
+  </section>
+
+  <!-- AI ASSISTANT -->
+  <section id="tab-ai" class="tab">
+    <div class="page-head">
+      <div><h2>AI assistant</h2><p>Optional. Layers real AI research and narrative analysis on top of the free rule-based tools.</p></div>
+    </div>
+    <div class="card">
+      <h3 style="font-size:1.05rem;">AI connection</h3>
+      <p class="hint">Google's Gemini API has a genuine free tier — no credit card, no expiration — so it's the default here and keeps this system at $0. It comes with two tradeoffs worth knowing: rate limits (roughly 1,000–1,500 requests/day, plenty for periodic fundraising analysis), and Google may use free-tier prompts to improve its products, so avoid pasting in donor names or other personal details (the built-in prompts below only ever send financial figures and category labels, never donor identities). A paid Anthropic option is also available if you'd rather use Claude and don't mind a small per-call cost.</p>
+      <div class="form-grid three">
+        <div class="field">
+          <label>AI provider</label>
+          <select id="ai-endpoint-mode" onchange="toggleEndpointField()">
+            <option value="gemini">Google Gemini — free tier (recommended)</option>
+            <option value="anthropic">Anthropic Claude — paid, no free tier</option>
+            <option value="custom">Custom proxy URL (e.g. your own Apps Script Web App)</option>
+          </select>
+        </div>
+        <div class="field" id="ai-custom-url-field" style="display:none;">
+          <label>Proxy URL</label>
+          <input id="ai-custom-url" placeholder="https://script.google.com/macros/s/.../exec">
+        </div>
+        <div class="field">
+          <label id="ai-key-label">Google AI Studio API key</label>
+          <input id="ai-api-key" type="password" placeholder="AIza...">
+        </div>
+        <div class="field">
+          <label>Model</label>
+          <select id="ai-model"></select>
+        </div>
+      </div>
+      <p class="hint" id="ai-key-help">Free — no billing required. Get a key at <a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener">aistudio.google.com/apikey</a> by signing in with a Google account and clicking "Create API key."</p>
+      <label style="display:flex;align-items:center;gap:.45rem;font-weight:500;">
+        <input type="checkbox" id="ai-remember" style="width:auto;"> Remember these settings on this device
+      </label>
+      <div class="btn-row">
+        <button class="btn gold" onclick="saveAiSettings()">Save AI settings</button>
+        <span id="aiStatusMsg" class="hint" style="margin-left:.3rem;align-self:center;"></span>
+      </div>
+      <p class="hint">Your key is sent straight from this browser tab to the endpoint above with each request — it is never stored on a server by this app. Leave "remember" unchecked on a shared computer. If direct browser calls are ever blocked (CORS), deploy a small Google Apps Script Web App that forwards the request server-side and use it as a custom proxy URL — that also keeps the key out of the browser entirely and is itself free to run.</p>
+    </div>
+
+    <div class="card">
+      <h3 style="font-size:1.05rem;">AI performance analysis</h3>
+      <p class="hint">Reads the current numbers for every active fundraiser — pace vs. time elapsed, channel totals, projected outcome — and writes a short analyst-style read on each one, plus an overall SOL-wide summary. Grounded in your own data; it will say so if there isn't enough history to draw on yet.</p>
+      <div class="btn-row"><button class="btn" onclick="runAiPerformanceAnalysis()">Analyze all active fundraisers</button></div>
+      <div id="aiPerfOutput"></div>
+    </div>
+  </section>
+
+  <!-- HISTORY -->
+  <section id="tab-history" class="tab">
+    <div class="page-head">
+      <div><h2>History</h2><p>Closed fundraisers, kept so future recommendations can learn from what worked.</p></div>
+    </div>
+    <div class="card">
+      <div class="table-wrap"><table id="historyTable"></table></div>
+    </div>
+  </section>
+
+  <!-- DATA -->
+  <section id="tab-data" class="tab">
+    <div class="page-head"><div><h2>Data and backup</h2><p>Everything lives only in this browser tab. Save a backup before closing it.</p></div></div>
+    <div class="card">
+      <h3 style="font-size:1.05rem;">Save a backup</h3>
+      <p class="hint">Downloads a single JSON file with every fundraiser, transaction, expense, and archived campaign.</p>
+      <div class="btn-row"><button class="btn gold" onclick="exportData()">Download backup</button></div>
+    </div>
+    <div class="card">
+      <h3 style="font-size:1.05rem;">Restore a backup</h3>
+      <p class="hint">Loading a backup replaces everything currently in the tracker.</p>
+      <input type="file" id="importFile" accept="application/json" style="max-width:320px;">
+      <div class="btn-row"><button class="btn secondary" onclick="importData()">Load backup</button></div>
+    </div>
+    <div class="card">
+      <h3 style="font-size:1.05rem;color:var(--coral);">Reset everything</h3>
+      <p class="hint">Permanently clears all fundraisers, activity, and history in this tab.</p>
+      <div class="btn-row"><button class="btn danger" onclick="resetAll()">Clear all data</button></div>
+    </div>
+  </section>
+
+</main>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* ============================= STATE ============================= */
+let state = {
+  fundraisers: [],
+  transactions: [],
+  expenses: [],
+  historical: []
+};
+let logType = 'txn';
+
+/* ============================= NAV ============================= */
+document.querySelectorAll('.nav-items button').forEach(btn=>{
+  btn.addEventListener('click', ()=>goTo(btn.dataset.tab));
+});
+function goTo(tab){
+  document.querySelectorAll('.nav-items button').forEach(b=>b.classList.toggle('active', b.dataset.tab===tab));
+  document.querySelectorAll('.tab').forEach(s=>s.classList.toggle('active', s.id==='tab-'+tab));
+  renderAll();
+}
+
+/* ============================= HELPERS ============================= */
+function uid(prefix, list, idKey){
+  let max = 0;
+  list.forEach(item=>{
+    const m = String(item[idKey]||'').match(/(\d+)$/);
+    if(m) max = Math.max(max, parseInt(m[1],10));
+  });
+  return prefix + '-' + String(max+1).padStart(4,'0');
+}
+function round2(n){ return Math.round((Number(n)+Number.EPSILON)*100)/100; }
+function fmtMoney(n){ return '$' + (Number(n)||0).toLocaleString(undefined,{minimumFractionDigits:0,maximumFractionDigits:2}); }
+function daysBetween(a,b){
+  if(!a||!b) return null;
+  const A=new Date(a+'T00:00:00'), B=new Date(b+'T00:00:00');
+  return Math.round((B-A)/86400000);
+}
+function todayStr(){ return new Date().toISOString().slice(0,10); }
+function showToast(msg){
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(t._timer);
+  t._timer = setTimeout(()=>t.classList.remove('show'), 2600);
+}
+
+/* ============================= CALCULATIONS ============================= */
+function computeFundraiser(f){
+  const txns = state.transactions.filter(t=>t.fundraiserId===f.id);
+  const exps = state.expenses.filter(e=>e.fundraiserId===f.id);
+  const txnTotal = txns.reduce((s,t)=>s+Number(t.amount||0),0);
+  const expenseTotal = exps.reduce((s,e)=>s+Number(e.amount||0),0);
+
+  const goal = Number(f.goal)||0;
+  const starting = Number(f.starting)||0;
+  const currentRaised = starting + txnTotal;
+  const remaining = goal - currentRaised;
+  const percentRaised = goal>0 ? (currentRaised/goal)*100 : 0;
+  const netFunds = currentRaised - expenseTotal;
+
+  const daysAvailable = daysBetween(f.start, f.deadline);
+  const daysElapsed = f.start ? Math.max(0, daysBetween(f.start, todayStr())) : 0;
+  const daysRemaining = f.deadline!=null ? Math.max(0, daysBetween(todayStr(), f.deadline)) : null;
+
+  const requiredDaily = (daysRemaining!=null && daysRemaining>0) ? remaining/daysRemaining : (remaining<=0?0:null);
+  const actualDaily = daysElapsed>0 ? txnTotal/daysElapsed : (txnTotal>0?txnTotal:0);
+
+  let projectedFinal = currentRaised;
+  if(daysRemaining!=null) projectedFinal = currentRaised + actualDaily*daysRemaining;
+  const aboveBelow = projectedFinal - goal;
+
+  const numTxns = txns.length;
+  const avgTxn = numTxns>0 ? txnTotal/numTxns : 0;
+
+  const status = f.closed ? '⚫ Closed' : determineStatus({percentRaised,daysAvailable,daysRemaining,daysElapsed,goal,currentRaised,projectedFinal});
+
+  return {
+    txns, exps, txnTotal, expenseTotal,
+    currentRaised: round2(currentRaised), remaining: round2(remaining),
+    percentRaised: round2(percentRaised), daysAvailable, daysRemaining,
+    requiredDaily: requiredDaily==null?null:round2(requiredDaily),
+    actualDaily: round2(actualDaily), projectedFinal: round2(projectedFinal),
+    aboveBelow: round2(aboveBelow), totalExpenses: round2(expenseTotal),
+    netFunds: round2(netFunds), numTxns, avgTxn: round2(avgTxn), status
+  };
+}
+
+function determineStatus(p){
+  if(p.daysElapsed<=0 && p.currentRaised<=0) return '⚪ Not started';
+  if(p.goal>0 && p.currentRaised>=p.goal) return '🔵 Completed';
+  if(p.daysRemaining!=null && p.daysRemaining<=0 && p.currentRaised<p.goal) return '⚫ Closed';
+
+  if(p.daysAvailable>0 && p.daysRemaining!=null){
+    const timeElapsedFraction = 1 - (p.daysRemaining/p.daysAvailable);
+    const goalFraction = p.goal>0 ? p.currentRaised/p.goal : 0;
+    const paceDelta = goalFraction - timeElapsedFraction;
+    const attentionBuffer = 0.15;
+    const nearDeadline = p.daysRemaining <= Math.max(1, Math.round(p.daysAvailable*0.1));
+    if(nearDeadline && p.projectedFinal < p.goal*0.95) return '🔴 Behind target';
+    if(paceDelta >= -attentionBuffer) return '🟢 On track';
+    if(paceDelta >= -attentionBuffer*2) return '🟡 Needs attention';
+    return '🔴 Behind target';
+  }
+  if(p.percentRaised>=100) return '🔵 Completed';
+  if(p.percentRaised>=50) return '🟢 On track';
+  if(p.percentRaised>=25) return '🟡 Needs attention';
+  return '🔴 Behind target';
+}
+function statusClass(status){
+  if(status.includes('On track')) return 'status-ontrack';
+  if(status.includes('Needs attention')) return 'status-attention';
+  if(status.includes('Behind')) return 'status-behind';
+  if(status.includes('Completed')) return 'status-completed';
+  if(status.includes('Not started')) return 'status-notstarted';
+  return 'status-closed';
+}
+
+/* ============================= SUN ARC (signature visual) ============================= */
+function lerp(a,b,t){ return a+(b-a)*t; }
+function lerpColor(c1,c2,t){
+  const h1=c1.replace('#',''), h2=c2.replace('#','');
+  const r=Math.round(lerp(parseInt(h1.slice(0,2),16),parseInt(h2.slice(0,2),16),t));
+  const g=Math.round(lerp(parseInt(h1.slice(2,4),16),parseInt(h2.slice(2,4),16),t));
+  const b=Math.round(lerp(parseInt(h1.slice(4,6),16),parseInt(h2.slice(4,6),16),t));
+  return `rgb(${r},${g},${b})`;
+}
+function sunArcSVG(percent, size){
+  size = size || 90;
+  const p = Math.max(0, Math.min(100, percent));
+  const overflow = percent > 100;
+  const angleDeg = 180 - (p/100)*90;
+  const rad = angleDeg*Math.PI/180;
+  const cx=100, cy=95, rx=88, ry=76;
+  const sunX = cx + rx*Math.cos(rad);
+  const sunY = cy - ry*Math.sin(rad);
+  const color = p<=50 ? lerpColor('#E1594A','#E9A23B', p/50) : lerpColor('#E9A23B','#F6C453',(p-50)/50);
+  const trackPath = `M ${cx-rx} ${cy} A ${rx} ${ry} 0 0 1 ${cx} ${cy-ry}`;
+  const rays = overflow ? `<g stroke="${color}" stroke-width="2.5" stroke-linecap="round" opacity="0.85">
+      <line x1="${sunX}" y1="${sunY-16}" x2="${sunX}" y2="${sunY-24}"/>
+      <line x1="${sunX+13}" y1="${sunY-11}" x2="${sunX+19}" y2="${sunY-16}"/>
+      <line x1="${sunX-13}" y1="${sunY-11}" x2="${sunX-19}" y2="${sunY-16}"/>
+      <line x1="${sunX+16}" y1="${sunY}" x2="${sunX+24}" y2="${sunY}"/>
+      <line x1="${sunX-16}" y1="${sunY}" x2="${sunX-24}" y2="${sunY}"/>
+    </g>` : '';
+  return `<svg viewBox="0 0 200 110" width="${size}" height="${size*0.6}" role="img" aria-label="${Math.round(percent)} percent raised">
+    <line x1="6" y1="${cy}" x2="194" y2="${cy}" stroke="#DCD3BE" stroke-width="2"/>
+    <path d="${trackPath}" fill="none" stroke="#E7E1D2" stroke-width="2" stroke-dasharray="1 5" stroke-linecap="round"/>
+    ${rays}
+    <circle cx="${sunX}" cy="${sunY}" r="${overflow?12:10}" fill="${color}"/>
+  </svg>`;
+}
+
+/* ============================= FUNDRAISER CRUD ============================= */
+function openNewFundraiser(){ document.getElementById('newFundraiserForm').style.display='block'; }
+function closeNewFundraiser(){ document.getElementById('newFundraiserForm').style.display='none'; }
+function saveNewFundraiser(){
+  const name = document.getElementById('nf-name').value.trim();
+  const goal = document.getElementById('nf-goal').value;
+  const start = document.getElementById('nf-start').value;
+  const deadline = document.getElementById('nf-deadline').value;
+  if(!name || !goal || !start || !deadline){
+    showToast('Name, goal, start date, and deadline are required.');
+    return;
+  }
+  const f = {
+    id: uid('FR', state.fundraisers, 'id'),
+    name, event: document.getElementById('nf-event').value.trim(),
+    goal: Number(goal), starting: Number(document.getElementById('nf-starting').value||0),
+    start, deadline,
+    audience: document.getElementById('nf-audience').value,
+    geo: document.getElementById('nf-geo').value,
+    budget: document.getElementById('nf-budget').value,
+    volunteers: document.getElementById('nf-volunteers').value,
+    purpose: document.getElementById('nf-purpose').value.trim(),
+    previous: document.getElementById('nf-previous').value.trim(),
+    lastAlertMilestone: 0,
+    closed: false
+  };
+  state.fundraisers.push(f);
+  ['nf-name','nf-event','nf-goal','nf-starting','nf-start','nf-deadline','nf-purpose','nf-previous'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('nf-starting').value = 0;
+  closeNewFundraiser();
+  showToast('Fundraiser created: ' + f.id);
+  renderAll();
+}
+function archiveFundraiser(id){
+  const f = state.fundraisers.find(x=>x.id===id);
+  if(!f) return;
+  if(!confirm(`Close and archive "${f.name}"? Its transactions and expenses stay on record.`)) return;
+  const c = computeFundraiser(f);
+  const byChannel = {};
+  c.txns.forEach(t=>{ const ch=t.channel||'(unspecified)'; byChannel[ch]=(byChannel[ch]||0)+Number(t.amount||0); });
+  let bestChannel='(none)', bestAmt=-Infinity;
+  Object.keys(byChannel).forEach(ch=>{ if(byChannel[ch]>bestAmt){bestAmt=byChannel[ch]; bestChannel=ch;} });
+  state.historical.push({
+    fundraiserId: f.id, name: f.name, type: f.event, goal: f.goal,
+    raised: c.currentRaised, expenses: c.totalExpenses, net: c.netFunds,
+    duration: c.daysAvailable, channels: Object.keys(byChannel).join(', ') || '(none)',
+    numTxns: c.numTxns, bestChannel,
+    outcome: c.currentRaised>=f.goal ? 'Goal met' : 'Goal not met',
+    archivedDate: todayStr()
+  });
+  f.closed = true;
+  showToast('Archived to History.');
+  renderAll();
+}
+function deleteFundraiser(id){
+  const f = state.fundraisers.find(x=>x.id===id);
+  if(!f) return;
+  if(!confirm(`Permanently delete "${f.name}" and all its transactions/expenses? This cannot be undone.`)) return;
+  state.fundraisers = state.fundraisers.filter(x=>x.id!==id);
+  state.transactions = state.transactions.filter(x=>x.fundraiserId!==id);
+  state.expenses = state.expenses.filter(x=>x.fundraiserId!==id);
+  renderAll();
+}
+let openDetailId = null;
+function toggleDetail(id){
+  openDetailId = (openDetailId===id) ? null : id;
+  renderFundraisers();
+}
+
+/* ============================= RENDER: DASHBOARD ============================= */
+function renderDashboard(){
+  const rows = state.fundraisers.map(f=>({f, c:computeFundraiser(f)}));
+  const totalGoal = round2(rows.reduce((s,r)=>s+Number(r.f.goal||0),0));
+  const totalRaised = round2(rows.reduce((s,r)=>s+r.c.currentRaised,0));
+  const totalRemaining = round2(totalGoal-totalRaised);
+  const overallPct = totalGoal>0 ? round2((totalRaised/totalGoal)*100) : 0;
+  const totalExpenses = round2(rows.reduce((s,r)=>s+r.c.totalExpenses,0));
+  const totalNet = round2(totalRaised-totalExpenses);
+
+  const stats = [
+    ['Total goal', fmtMoney(totalGoal)],
+    ['Total raised', fmtMoney(totalRaised)],
+    ['Remaining', fmtMoney(totalRemaining)],
+    ['% of goal', overallPct+'%'],
+    ['Total expenses', fmtMoney(totalExpenses)],
+    ['Net funds', fmtMoney(totalNet)]
+  ];
+  document.getElementById('dashStats').innerHTML = stats.map(s=>`<div class="stat"><div class="label">${s[0]}</div><div class="value">${s[1]}</div></div>`).join('');
+
+  const active = rows.filter(r=>!r.f.closed && r.c.status!=='🔵 Completed');
+  const activeTable = document.getElementById('dashActiveTable');
+  if(active.length===0){
+    activeTable.innerHTML = `<tr class="empty-row"><td>No active fundraisers yet. Create one to get started.</td></tr>`;
+  } else {
+    activeTable.innerHTML = `<tr><th>Name</th><th>Progress</th><th>Raised</th><th>Goal</th><th>Deadline</th><th>Days left</th><th>Status</th></tr>` +
+      active.map(({f,c})=>`<tr>
+        <td>${f.name}</td>
+        <td>${sunArcSVG(c.percentRaised,70)}</td>
+        <td class="mono">${fmtMoney(c.currentRaised)} (${c.percentRaised}%)</td>
+        <td class="mono">${fmtMoney(f.goal)}</td>
+        <td>${f.deadline}</td>
+        <td class="mono">${c.daysRemaining!=null?c.daysRemaining:'—'}</td>
+        <td><span class="badge ${statusClass(c.status)}">${c.status}</span></td>
+      </tr>`).join('');
+  }
+
+  const counts = {onTrack:0, ahead:0, behind:0, completed:0, nearDeadline:0};
+  rows.forEach(({f,c})=>{
+    if(c.status==='🔵 Completed') counts.completed++;
+    if(c.status==='🔴 Behind target') counts.behind++;
+    if(c.status==='🟢 On track'){ if(c.aboveBelow>0) counts.ahead++; else counts.onTrack++; }
+    if(c.daysRemaining!=null && c.daysAvailable>0 && !f.closed && c.status!=='🔵 Completed'){
+      if(c.daysRemaining <= Math.max(1, Math.round(c.daysAvailable*0.1))) counts.nearDeadline++;
+    }
+  });
+  const perf = [
+    ['On track', counts.onTrack],['Ahead of target', counts.ahead],
+    ['Behind target', counts.behind],['Completed', counts.completed],
+    ['Approaching deadline', counts.nearDeadline]
+  ];
+  document.getElementById('dashPerf').innerHTML = perf.map(s=>`<div class="stat"><div class="label">${s[0]}</div><div class="value">${s[1]}</div></div>`).join('');
+
+  const alerts = [];
+  rows.forEach(({f,c})=>{
+    if(f.closed) return;
+    const milestones=[25,50,75,100];
+    let hit=0;
+    milestones.forEach(m=>{ if(c.percentRaised>=m) hit=m; });
+    if(c.percentRaised>100) hit=999;
+    if(hit>(f.lastAlertMilestone||0)){
+      const label = hit===999 ? 'exceeded its goal' : `reached ${hit}% of its goal`;
+      alerts.push({type:'milestone', text:`"${f.name}" has ${label} (currently ${c.percentRaised}%).`});
+    }
+    if(c.daysRemaining!=null && c.daysAvailable>0){
+      const near = c.daysRemaining <= Math.max(1, Math.round(c.daysAvailable*0.1));
+      if(near && c.daysRemaining>=0 && c.status!=='🔵 Completed'){
+        alerts.push({type:'deadline', text:`"${f.name}" is approaching its deadline — ${c.daysRemaining} day(s) left, ${c.percentRaised}% raised.`});
+      }
+    }
+    if(c.status==='🔴 Behind target'){
+      alerts.push({type:'behind', text:`"${f.name}" is currently behind target (${c.percentRaised}% raised).`});
+    }
+  });
+  document.getElementById('dashAlerts').innerHTML = alerts.slice(0,6).map(a=>
+    `<div class="alert-box alert-${a.type}">${a.text}</div>`).join('');
+}
+
+/* ============================= RENDER: FUNDRAISERS ============================= */
+function renderFundraisers(){
+  const table = document.getElementById('fundraisersTable');
+  if(state.fundraisers.length===0){
+    table.innerHTML = `<tr class="empty-row"><td>No fundraisers yet.</td></tr>`;
+  } else {
+    table.innerHTML = `<tr><th>ID</th><th>Name</th><th>Goal</th><th>Raised</th><th>Status</th><th></th></tr>` +
+      state.fundraisers.map(f=>{
+        const c = computeFundraiser(f);
+        return `<tr>
+          <td class="mono">${f.id}</td>
+          <td>${f.name}</td>
+          <td class="mono">${fmtMoney(f.goal)}</td>
+          <td class="mono">${fmtMoney(c.currentRaised)} (${c.percentRaised}%)</td>
+          <td><span class="badge ${statusClass(c.status)}">${c.status}</span></td>
+          <td><button class="link-btn" onclick="toggleDetail('${f.id}')">${openDetailId===f.id?'Hide':'View'}</button></td>
+        </tr>`;
+      }).join('');
+  }
+
+  const detailDiv = document.getElementById('fundraiserDetail');
+  if(!openDetailId){ detailDiv.innerHTML=''; return; }
+  const f = state.fundraisers.find(x=>x.id===openDetailId);
+  if(!f){ detailDiv.innerHTML=''; return; }
+  const c = computeFundraiser(f);
+  detailDiv.innerHTML = `
+    <div class="detail-panel">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:1rem;">
+        <div>
+          <h3>${f.name} <span class="badge ${statusClass(c.status)}">${c.status}</span></h3>
+          <p class="hint">${f.event || '—'} · ${f.id}</p>
+        </div>
+        ${sunArcSVG(c.percentRaised, 130)}
+      </div>
+      <div class="stat-grid" style="margin-top:1rem;">
+        <div class="stat"><div class="label">Raised / Goal</div><div class="value">${fmtMoney(c.currentRaised)} / ${fmtMoney(f.goal)}</div></div>
+        <div class="stat"><div class="label">Remaining</div><div class="value">${fmtMoney(c.remaining)}</div></div>
+        <div class="stat"><div class="label">Days remaining</div><div class="value">${c.daysRemaining!=null?c.daysRemaining:'—'}</div></div>
+        <div class="stat"><div class="label">Required $/day</div><div class="value">${c.requiredDaily!=null?fmtMoney(c.requiredDaily):'—'}</div></div>
+        <div class="stat"><div class="label">Actual $/day</div><div class="value">${fmtMoney(c.actualDaily)}</div></div>
+        <div class="stat"><div class="label">Projected final</div><div class="value">${fmtMoney(c.projectedFinal)}</div></div>
+        <div class="stat"><div class="label">Net funds</div><div class="value">${fmtMoney(c.netFunds)}</div></div>
+        <div class="stat"><div class="label">Transactions</div><div class="value">${c.numTxns} (avg ${fmtMoney(c.avgTxn)})</div></div>
+      </div>
+      <div class="section-title">Details</div>
+      <p style="font-size:.85rem;line-height:1.6;">
+        Audience: ${f.audience || '—'} · Geography: ${f.geo || '—'} · Budget: ${f.budget || '—'} · Team: ${f.volunteers || '—'}<br>
+        Purpose: ${f.purpose || '—'}${f.previous ? `<br>Previous results: ${f.previous}` : ''}
+      </p>
+      <div class="btn-row">
+        <button class="btn secondary" onclick="goTo('strategy');prefillStrategySelect('${f.id}');">Get strategy advice</button>
+        <button class="btn secondary" onclick="runAiFundraiserInsight('${f.id}')">✦ AI performance insight</button>
+        ${!f.closed ? `<button class="btn secondary" onclick="archiveFundraiser('${f.id}')">Close & archive</button>` : ''}
+        <button class="btn danger" onclick="deleteFundraiser('${f.id}')">Delete</button>
+      </div>
+      <div id="aiFundraiserInsightOutput"></div>
+    </div>`;
+}
+
+/* ============================= RENDER: ACTIVITY LOG ============================= */
+function setLogType(type){
+  logType = type;
+  document.getElementById('logTypeTxnBtn').className = type==='txn' ? 'btn' : 'btn secondary';
+  document.getElementById('logTypeExpBtn').className = type==='exp' ? 'btn' : 'btn secondary';
+  renderLogForm();
+}
+function fundraiserOptions(selectedId){
+  if(state.fundraisers.length===0) return '<option value="">No fundraisers yet</option>';
+  return state.fundraisers.map(f=>`<option value="${f.id}" ${f.id===selectedId?'selected':''}>${f.id} — ${f.name}</option>`).join('');
+}
+function renderLogForm(){
+  const el = document.getElementById('logForm');
+  if(logType==='txn'){
+    el.innerHTML = `
+      <div class="form-grid three">
+        <div class="field"><label>Fundraiser</label><select id="tx-fundraiser">${fundraiserOptions()}</select></div>
+        <div class="field"><label>Date</label><input id="tx-date" type="date" value="${todayStr()}"></div>
+        <div class="field"><label>Amount ($)</label><input id="tx-amount" type="number" min="0" step="0.01"></div>
+        <div class="field"><label>Revenue type</label>
+          <select id="tx-type"><option>Donation</option><option>Sponsorship</option><option>Ticket</option><option>Merchandise</option><option>Fundraising Event</option><option>Other</option></select>
+        </div>
+        <div class="field"><label>Payment / source type</label><input id="tx-payment" placeholder="Cash, card, check, online..."></div>
+        <div class="field"><label>Campaign / channel</label><input id="tx-channel" placeholder="Social media, email, local business..."></div>
+        <div class="field"><label>Donor / source category</label><input id="tx-donor" placeholder="Individual, business, school..."></div>
+        <div class="field" style="grid-column:1/-1;"><label>Notes</label><textarea id="tx-notes"></textarea></div>
+      </div>
+      <div class="btn-row"><button class="btn gold" onclick="saveTransaction()">Save transaction</button></div>`;
+  } else {
+    el.innerHTML = `
+      <div class="form-grid three">
+        <div class="field"><label>Fundraiser</label><select id="ex-fundraiser">${fundraiserOptions()}</select></div>
+        <div class="field"><label>Date</label><input id="ex-date" type="date" value="${todayStr()}"></div>
+        <div class="field"><label>Expense amount ($)</label><input id="ex-amount" type="number" min="0" step="0.01"></div>
+        <div class="field"><label>Expense category</label><input id="ex-category" placeholder="Supplies, printing, venue..."></div>
+        <div class="field" style="grid-column:1/-1;"><label>Description</label><input id="ex-description"></div>
+        <div class="field" style="grid-column:1/-1;"><label>Notes</label><textarea id="ex-notes"></textarea></div>
+      </div>
+      <div class="btn-row"><button class="btn gold" onclick="saveExpense()">Save expense</button></div>`;
+  }
+}
+function saveTransaction(){
+  const fundraiserId = document.getElementById('tx-fundraiser').value;
+  const amount = document.getElementById('tx-amount').value;
+  if(!fundraiserId || !amount){ showToast('Fundraiser and amount are required.'); return; }
+  if(Number(amount)<=0 || isNaN(Number(amount))){ showToast('Amount must be a positive number.'); return; }
+  state.transactions.push({
+    id: uid('TX', state.transactions, 'id'), fundraiserId,
+    date: document.getElementById('tx-date').value, amount: Number(amount),
+    revenueType: document.getElementById('tx-type').value,
+    payment: document.getElementById('tx-payment').value.trim(),
+    channel: document.getElementById('tx-channel').value.trim(),
+    donor: document.getElementById('tx-donor').value.trim(),
+    notes: document.getElementById('tx-notes').value.trim()
+  });
+  showToast('Transaction saved.');
+  renderLogForm();
+  renderAll();
+}
+function saveExpense(){
+  const fundraiserId = document.getElementById('ex-fundraiser').value;
+  const amount = document.getElementById('ex-amount').value;
+  if(!fundraiserId || !amount){ showToast('Fundraiser and amount are required.'); return; }
+  if(Number(amount)<=0 || isNaN(Number(amount))){ showToast('Amount must be a positive number.'); return; }
+  state.expenses.push({
+    id: uid('EX', state.expenses, 'id'), fundraiserId,
+    date: document.getElementById('ex-date').value, amount: Number(amount),
+    category: document.getElementById('ex-category').value.trim(),
+    description: document.getElementById('ex-description').value.trim(),
+    notes: document.getElementById('ex-notes').value.trim()
+  });
+  showToast('Expense saved.');
+  renderLogForm();
+  renderAll();
+}
+function renderActivity(){
+  const filterSel = document.getElementById('activityFilter');
+  const current = filterSel.value;
+  filterSel.innerHTML = '<option value="">All fundraisers</option>' + fundraiserOptions();
+  filterSel.value = current;
+  const filterId = filterSel.value;
+
+  const rows = [
+    ...state.transactions.map(t=>({...t, kind:'Income', amt:t.amount, cat:t.revenueType, extra:t.channel})),
+    ...state.expenses.map(e=>({...e, kind:'Expense', amt:-e.amount, cat:e.category, extra:e.description}))
+  ].filter(r=>!filterId || r.fundraiserId===filterId)
+   .sort((a,b)=> (b.date||'').localeCompare(a.date||''));
+
+  const table = document.getElementById('activityTable');
+  if(rows.length===0){
+    table.innerHTML = `<tr class="empty-row"><td>No activity recorded yet.</td></tr>`;
+    return;
+  }
+  table.innerHTML = `<tr><th>Date</th><th>Fundraiser</th><th>Type</th><th>Category</th><th>Amount</th><th>Detail</th></tr>` +
+    rows.map(r=>{
+      const f = state.fundraisers.find(x=>x.id===r.fundraiserId);
+      return `<tr>
+        <td class="mono">${r.date||'—'}</td>
+        <td>${f?f.name:r.fundraiserId}</td>
+        <td>${r.kind}</td>
+        <td>${r.cat||'—'}</td>
+        <td class="mono" style="color:${r.amt<0?'var(--coral)':'var(--teal)'}">${r.amt<0?'-':''}${fmtMoney(Math.abs(r.amt))}</td>
+        <td>${r.extra||'—'}</td>
+      </tr>`;
+    }).join('');
+}
+
+/* ============================= RENDER: HISTORY ============================= */
+function renderHistory(){
+  const table = document.getElementById('historyTable');
+  if(state.historical.length===0){
+    table.innerHTML = `<tr class="empty-row"><td>No archived fundraisers yet.</td></tr>`;
+    return;
+  }
+  table.innerHTML = `<tr><th>Name</th><th>Goal</th><th>Raised</th><th>Net</th><th>Duration</th><th>Best channel</th><th>Outcome</th><th>Archived</th></tr>` +
+    state.historical.slice().reverse().map(h=>`<tr>
+      <td>${h.name}</td>
+      <td class="mono">${fmtMoney(h.goal)}</td>
+      <td class="mono">${fmtMoney(h.raised)}</td>
+      <td class="mono">${fmtMoney(h.net)}</td>
+      <td>${h.duration!=null?h.duration+' days':'—'}</td>
+      <td>${h.bestChannel}</td>
+      <td>${h.outcome}</td>
+      <td class="mono">${h.archivedDate}</td>
+    </tr>`).join('');
+}
+
+/* ============================= STRATEGY ADVISOR (rule-based) ============================= */
+function refreshStrategySelect(){
+  const sel = document.getElementById('sa-fundraiser');
+  const current = sel.value;
+  sel.innerHTML = '<option value="">— start from scratch —</option>' + fundraiserOptions();
+  sel.value = current;
+}
+function prefillStrategySelect(id){ refreshStrategySelect(); document.getElementById('sa-fundraiser').value=id; prefillStrategyFromFundraiser(); }
+function prefillStrategyFromFundraiser(){
+  const id = document.getElementById('sa-fundraiser').value;
+  if(!id) return;
+  const f = state.fundraisers.find(x=>x.id===id);
+  if(!f) return;
+  const goal = f.goal<1000?'small':f.goal<5000?'medium':f.goal<20000?'large':'major';
+  const days = daysBetween(todayStr(), f.deadline);
+  const time = days==null?'standard':days<14?'veryshort':days<30?'short':days<90?'standard':'extended';
+  document.getElementById('sa-goal').value = goal;
+  document.getElementById('sa-time').value = time;
+  document.getElementById('sa-audience').value = f.audience;
+  document.getElementById('sa-geo').value = f.geo;
+  document.getElementById('sa-budget').value = f.budget;
+  document.getElementById('sa-volunteers').value = f.volunteers;
+  const m = f.deadline ? new Date(f.deadline+'T00:00:00').getMonth()+1 : new Date().getMonth()+1;
+  document.getElementById('sa-season').value = (m===11||m===12)?'winter-holiday':(m<=2)?'new-year':(m<=5)?'spring':(m<=8)?'summer':'fall';
+}
+
+const METHODS = [
+  {key:'individual', name:'Individual donations', base:{small:3,medium:3,large:2,major:1},
+   audienceBoost:{'Existing donor base':3,'Local community / neighbors':2,'Broad / general public':1,'Students, families & school community':1,'Local businesses':0},
+   timeBoost:{veryshort:1,short:2,standard:2,extended:1},
+   pros:'Low cost, works with almost any timeline, builds a recurring donor base.',
+   cons:'Individual gifts are typically small — needs volume to hit a large goal.'},
+  {key:'sponsorship', name:'Business sponsorships', base:{small:0,medium:2,large:3,major:3},
+   audienceBoost:{'Local businesses':3,'Local community / neighbors':1,'Existing donor base':1,'Broad / general public':0,'Students, families & school community':1},
+   timeBoost:{veryshort:-1,short:0,standard:2,extended:3},
+   pros:'Larger gifts per ask, can fund a big chunk of the goal quickly if relationships exist.',
+   cons:'Outreach and approval cycles take time — weak fit for very short timelines.'},
+  {key:'p2p', name:'Peer-to-peer fundraising', base:{small:2,medium:3,large:2,major:1},
+   audienceBoost:{'Existing donor base':2,'Broad / general public':2,'Students, families & school community':3,'Local community / neighbors':1,'Local businesses':0},
+   timeBoost:{veryshort:2,short:2,standard:1,extended:0},
+   volunteerBoost:{'Large team (10+)':2,'Small team (3–10)':1,'Just 1–2 people':-1},
+   pros:'Multiplies reach through your team\'s own networks, works fast.',
+   cons:'Needs willing volunteers/students to actually fundraise on your behalf.'},
+  {key:'platform', name:'Online crowdfunding page', base:{small:2,medium:2,large:2,major:2},
+   audienceBoost:{'Broad / general public':3,'Existing donor base':1,'Local community / neighbors':1,'Students, families & school community':1,'Local businesses':0},
+   timeBoost:{veryshort:2,short:1,standard:1,extended:0},
+   pros:'Free or near-free to set up, easy to share, works for any geography.',
+   cons:'Needs active promotion — a page alone rarely raises much on its own.'},
+  {key:'product', name:'Product / merchandise sale', base:{small:3,medium:2,large:1,major:0},
+   audienceBoost:{'Local community / neighbors':2,'Students, families & school community':2,'Broad / general public':1,'Existing donor base':1,'Local businesses':0},
+   timeBoost:{veryshort:0,short:1,standard:2,extended:1},
+   budgetBoost:{'Substantial (over $500)':1,'Moderate ($100–$500)':1,'Minimal (under $100)':-1},
+   pros:'Tangible, low-pressure ask; good for community and school settings.',
+   cons:'Upfront cost/inventory risk, and margins eat into what\'s actually raised.'},
+  {key:'event', name:'In-person fundraising event', base:{small:1,medium:2,large:3,major:2},
+   audienceBoost:{'Local community / neighbors':3,'Existing donor base':2,'Local businesses':1,'Students, families & school community':1,'Broad / general public':0},
+   timeBoost:{veryshort:-2,short:0,standard:2,extended:3},
+   volunteerBoost:{'Large team (10+)':2,'Small team (3–10)':1,'Just 1–2 people':-2},
+   budgetBoost:{'Substantial (over $500)':2,'Moderate ($100–$500)':0,'Minimal (under $100)':-2},
+   pros:'High engagement, strong community-building, can draw sponsors too.',
+   cons:'Needs lead time, a team to run it, and some budget to put on.'},
+  {key:'partnership', name:'School / community partnership', base:{small:2,medium:2,large:2,major:1},
+   audienceBoost:{'Students, families & school community':3,'Local community / neighbors':2,'Local businesses':1,'Existing donor base':1,'Broad / general public':0},
+   timeBoost:{veryshort:-1,short:0,standard:2,extended:2},
+   pros:'Taps an existing organized group and their networks at low cost.',
+   cons:'Depends on a partner organization\'s calendar and willingness to participate.'}
+];
+const CHANNELS = [
+  {name:'Email to existing list', audienceBoost:{'Existing donor base':3}, geoBoost:{}, timeBoost:{veryshort:2,short:2,standard:1,extended:0},
+   pros:'Free, fast, and reaches people who already trust SOL.'},
+  {name:'Social media', audienceBoost:{'Broad / general public':2,'Local community / neighbors':1,'Students, families & school community':1}, geoBoost:{'National / online':2,'City-wide':1},
+   timeBoost:{veryshort:2,short:1,standard:1,extended:0}, pros:'Free, wide reach, easy to share — best for awareness, weaker for large individual asks.'},
+  {name:'Local business outreach', audienceBoost:{'Local businesses':3}, geoBoost:{'Hyperlocal (single neighborhood)':2,'City-wide':1}, timeBoost:{standard:1,extended:2},
+   pros:'Best channel for sponsorship-sized gifts when there\'s time to build the relationship.'},
+  {name:'Community / school partnerships', audienceBoost:{'Students, families & school community':3,'Local community / neighbors':1}, geoBoost:{'Hyperlocal (single neighborhood)':2,'City-wide':1}, timeBoost:{standard:1,extended:1},
+   pros:'Leverages an existing group\'s trust and calendar of events.'},
+  {name:'Local newsletters / community boards', audienceBoost:{'Local community / neighbors':2}, geoBoost:{'Hyperlocal (single neighborhood)':2,'City-wide':1}, timeBoost:{standard:1,extended:1},
+   pros:'Low-cost, credible placement in front of a genuinely local audience.'},
+  {name:'Fundraising platform page (shareable link)', audienceBoost:{'Broad / general public':2,'Existing donor base':1}, geoBoost:{'National / online':2,'City-wide':1}, timeBoost:{veryshort:1,short:1},
+   pros:'A single link that works across every other channel — set up once, share everywhere.'}
+];
+
+function scoreItem(item, ctx){
+  let score = (item.base ? item.base[ctx.goal] : 0) || 0;
+  score += (item.audienceBoost && item.audienceBoost[ctx.audience]) || 0;
+  score += (item.geoBoost && item.geoBoost[ctx.geo]) || 0;
+  score += (item.timeBoost && item.timeBoost[ctx.time]) || 0;
+  score += (item.volunteerBoost && item.volunteerBoost[ctx.volunteers]) || 0;
+  score += (item.budgetBoost && item.budgetBoost[ctx.budget]) || 0;
+  if(ctx.season==='winter-holiday' && (item.key==='individual' || item.key==='platform')) score += 1;
+  if(ctx.season==='fall' && item.key==='partnership') score += 1;
+  return score;
+}
+function reasonFor(item, ctx){
+  const bits = [];
+  if(item.audienceBoost && item.audienceBoost[ctx.audience]>=2) bits.push(`fits a ${ctx.audience.toLowerCase()} audience`);
+  if(item.geoBoost && item.geoBoost[ctx.geo]>=1) bits.push(`suits a ${ctx.geo.toLowerCase()} reach`);
+  if(item.timeBoost && item.timeBoost[ctx.time]>=2) bits.push('works well on this timeline');
+  if(item.volunteerBoost && item.volunteerBoost[ctx.volunteers]>=1) bits.push('matches your available team size');
+  if(item.budgetBoost && item.budgetBoost[ctx.budget]>=1) bits.push('fits your available budget');
+  if(bits.length===0) bits.push('a reasonable general fit given the details provided');
+  return 'Recommended because it ' + bits.join(', ') + '.';
+}
+let lastStrategyCtx = null;
+function runStrategyAdvisor(){
+  document.getElementById('aiStrategyOutput').innerHTML = '';
+  const ctx = {
+    goal: document.getElementById('sa-goal').value,
+    time: document.getElementById('sa-time').value,
+    audience: document.getElementById('sa-audience').value,
+    geo: document.getElementById('sa-geo').value,
+    budget: document.getElementById('sa-budget').value,
+    volunteers: document.getElementById('sa-volunteers').value,
+    season: document.getElementById('sa-season').value
+  };
+  const rankedMethods = METHODS.map(m=>({...m, score:scoreItem(m,ctx)})).sort((a,b)=>b.score-a.score).slice(0,4);
+  const rankedChannels = CHANNELS.map(c=>({...c, score:scoreItem(c,ctx)})).sort((a,b)=>b.score-a.score).slice(0,4);
+
+  const goalDollar = {small:750, medium:3000, large:12000, major:35000}[ctx.goal];
+  const timeDays = {veryshort:10, short:21, standard:60, extended:120}[ctx.time];
+  const bizFraction = {'Local businesses':0.55, 'Existing donor base':0.15, 'Local community / neighbors':0.2, 'Students, families & school community':0.15, 'Broad / general public':0.1}[ctx.audience];
+  const bizTarget = Math.round(goalDollar*bizFraction/50)*50;
+  const indivTarget = goalDollar - bizTarget;
+  const avgGift = 50, avgSponsor = 300;
+  const outreachAttempts = Math.round(indivTarget/avgGift*2.5 + bizTarget/avgSponsor*3);
+
+  const methodsHtml = rankedMethods.map((m,i)=>`
+    <div class="rank-item">
+      <h4><span class="rank-num">${i+1}</span>${m.name}</h4>
+      <div class="why">${reasonFor(m,ctx)}</div>
+      <div style="font-size:.85rem;"><strong>Advantages:</strong> ${m.pros}</div>
+      <div style="font-size:.85rem;margin-top:.2rem;"><strong>Limitations:</strong> ${m.cons}</div>
+    </div>`).join('');
+  const channelsHtml = rankedChannels.map((c,i)=>`
+    <div class="rank-item">
+      <h4><span class="rank-num">${i+1}</span>${c.name}</h4>
+      <div class="why">${reasonFor(c,ctx)}</div>
+      <div style="font-size:.85rem;">${c.pros}</div>
+    </div>`).join('');
+
+  lastStrategyCtx = {ctx, rankedMethods, rankedChannels, goalDollar, bizTarget, indivTarget, timeDays};
+
+  document.getElementById('strategyOutput').innerHTML = `
+    <div class="card">
+      <h3 style="font-size:1.05rem;">Recommended fundraising methods</h3>
+      <ul class="rank-list">${methodsHtml}</ul>
+    </div>
+    <div class="card">
+      <h3 style="font-size:1.05rem;">Recommended promotion channels</h3>
+      <ul class="rank-list">${channelsHtml}</ul>
+    </div>
+    <div class="card">
+      <h3 style="font-size:1.05rem;">Suggested plan (estimate — not a guarantee)</h3>
+      <div class="stat-grid" style="margin-bottom:0;">
+        <div class="stat"><div class="label">Target from businesses</div><div class="value">${fmtMoney(bizTarget)}</div></div>
+        <div class="stat"><div class="label">Target from individuals</div><div class="value">${fmtMoney(indivTarget)}</div></div>
+        <div class="stat"><div class="label">Suggested outreach attempts</div><div class="value">${outreachAttempts}</div></div>
+        <div class="stat"><div class="label">Planning window</div><div class="value">${timeDays} days</div></div>
+      </div>
+      <p class="hint" style="margin-top:1rem;">Milestones: aim for 25% of the goal by day ${Math.round(timeDays*0.25)}, 50% by day ${Math.round(timeDays*0.5)}, 75% by day ${Math.round(timeDays*0.75)}, and 100% by day ${timeDays}. These figures are planning estimates based on the inputs above, not a guaranteed outcome — actual results depend on outreach follow-through and local conditions.</p>
+    </div>`;
+}
+
+/* ============================= AI CONFIG ============================= */
+const AI_MODELS = {
+  gemini: [
+    { value:'gemini-2.5-flash', label:'Gemini 2.5 Flash (recommended — free tier)' },
+    { value:'gemini-2.5-flash-lite', label:'Gemini 2.5 Flash-Lite (highest free daily limit)' },
+    { value:'gemini-2.5-pro', label:'Gemini 2.5 Pro (most capable, low free daily limit)' }
+  ],
+  anthropic: [
+    { value:'claude-sonnet-5', label:'Claude Sonnet 5 (balanced)' },
+    { value:'claude-haiku-4-5-20251001', label:'Claude Haiku 4.5 (fastest, cheapest)' },
+    { value:'claude-opus-4-8', label:'Claude Opus 4.8 (most thorough)' }
+  ],
+  custom: [
+    { value:'', label:'(set by your proxy — leave blank or type a model name)' }
+  ]
+};
+let aiConfig = { apiKey:'', model:'gemini-2.5-flash', endpointMode:'gemini', customUrl:'', remember:false };
+(function loadAiConfig(){
+  try{
+    const saved = localStorage.getItem('sol_ai_config');
+    if(saved) aiConfig = {...aiConfig, ...JSON.parse(saved)};
+  }catch(e){ /* ignore corrupt/unavailable storage */ }
+})();
+function populateModelOptions(mode, selected){
+  const sel = document.getElementById('ai-model');
+  const opts = AI_MODELS[mode] || AI_MODELS.custom;
+  sel.innerHTML = opts.map(o=>`<option value="${o.value}">${o.label}</option>`).join('');
+  if(selected && opts.some(o=>o.value===selected)) sel.value = selected;
+}
+function populateAiSettingsForm(){
+  const modeEl = document.getElementById('ai-endpoint-mode');
+  if(!modeEl) return; // AI tab not in DOM yet
+  modeEl.value = aiConfig.endpointMode;
+  document.getElementById('ai-custom-url').value = aiConfig.customUrl;
+  document.getElementById('ai-api-key').value = aiConfig.apiKey;
+  populateModelOptions(aiConfig.endpointMode, aiConfig.model);
+  document.getElementById('ai-remember').checked = aiConfig.remember;
+  toggleEndpointField();
+}
+function toggleEndpointField(){
+  const mode = document.getElementById('ai-endpoint-mode').value;
+  document.getElementById('ai-custom-url-field').style.display = mode==='custom' ? 'block' : 'none';
+  populateModelOptions(mode);
+  const keyLabel = document.getElementById('ai-key-label');
+  const keyInput = document.getElementById('ai-api-key');
+  const keyHelp = document.getElementById('ai-key-help');
+  if(mode==='gemini'){
+    keyLabel.textContent = 'Google AI Studio API key';
+    keyInput.placeholder = 'AIza...';
+    keyHelp.innerHTML = 'Free — no billing required. Get a key at <a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener">aistudio.google.com/apikey</a> by signing in with a Google account and clicking "Create API key."';
+    keyHelp.style.display = 'block';
+  } else if(mode==='anthropic'){
+    keyLabel.textContent = 'Anthropic API key';
+    keyInput.placeholder = 'sk-ant-...';
+    keyHelp.innerHTML = 'Paid — no ongoing free tier. Create a key and add billing at <a href="https://console.anthropic.com" target="_blank" rel="noopener">console.anthropic.com</a>. Typical calls here cost a small fraction of a cent.';
+    keyHelp.style.display = 'block';
+  } else {
+    keyLabel.textContent = 'API key (if your proxy needs one)';
+    keyInput.placeholder = 'optional, depends on your proxy';
+    keyHelp.style.display = 'none';
+  }
+}
+function saveAiSettings(){
+  aiConfig = {
+    apiKey: document.getElementById('ai-api-key').value.trim(),
+    model: document.getElementById('ai-model').value,
+    endpointMode: document.getElementById('ai-endpoint-mode').value,
+    customUrl: document.getElementById('ai-custom-url').value.trim(),
+    remember: document.getElementById('ai-remember').checked
+  };
+  try{
+    if(aiConfig.remember) localStorage.setItem('sol_ai_config', JSON.stringify(aiConfig));
+    else localStorage.removeItem('sol_ai_config');
+  }catch(e){ /* storage may be unavailable; settings still work for this session */ }
+  const msg = document.getElementById('aiStatusMsg');
+  msg.textContent = 'Saved.';
+  setTimeout(()=>{ if(msg) msg.textContent=''; }, 2500);
+  showToast('AI settings saved.');
+}
+function aiReady(){
+  return aiConfig.endpointMode==='custom' ? !!aiConfig.customUrl : !!aiConfig.apiKey;
+}
+function aiNotReadyMessage(){
+  return aiConfig.endpointMode==='custom'
+    ? 'Add a proxy URL on the AI assistant tab first.'
+    : 'Add a free Google AI Studio API key on the AI assistant tab first (aistudio.google.com/apikey).';
+}
+
+/* ============================= AI CALL HELPER ============================= */
+async function callAI(userPrompt, opts){
+  opts = opts || {};
+  if(!aiReady()) throw new Error(aiNotReadyMessage());
+  const mode = aiConfig.endpointMode;
+
+  try{
+    if(mode==='gemini'){
+      const model = aiConfig.model || 'gemini-2.5-flash';
+      const url = `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent?key=${encodeURIComponent(aiConfig.apiKey)}`;
+      const body = {
+        contents: [{ parts: [{ text: userPrompt }] }],
+        generationConfig: { maxOutputTokens: opts.maxTokens || 1200 }
+      };
+      // Grounding/web search on Gemini's free tier is unreliable and can require billing,
+      // so free-tier calls here rely on the model's own knowledge rather than live search.
+      const res = await fetch(url, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body) });
+      if(!res.ok){
+        let detail = ''; try{ detail = (await res.text()).slice(0,220); }catch(e){}
+        throw new Error('Gemini request failed (' + res.status + '). ' + detail);
+      }
+      const data = await res.json();
+      const cand = (data.candidates && data.candidates[0]) || null;
+      const text = cand && cand.content && cand.content.parts ? cand.content.parts.map(p=>p.text||'').join('') : '';
+      if(!text && cand && cand.finishReason){
+        throw new Error('Gemini returned no text (finish reason: ' + cand.finishReason + '). Try a shorter request or a different model.');
+      }
+      return text.trim();
+    }
+
+    if(mode==='anthropic'){
+      const body = {
+        model: aiConfig.model || 'claude-sonnet-5',
+        max_tokens: opts.maxTokens || 1200,
+        messages: [{ role:'user', content: userPrompt }]
+      };
+      if(opts.useWebSearch) body.tools = [{ type:'web_search_20250305', name:'web_search' }];
+      const headers = {
+        'Content-Type':'application/json',
+        'x-api-key': aiConfig.apiKey,
+        'anthropic-version': '2023-06-01',
+        'anthropic-dangerous-direct-browser-access': 'true'
+      };
+      const res = await fetch('https://api.anthropic.com/v1/messages', { method:'POST', headers, body: JSON.stringify(body) });
+      if(!res.ok){
+        let detail = ''; try{ detail = (await res.text()).slice(0,220); }catch(e){}
+        throw new Error('Anthropic request failed (' + res.status + '). ' + detail);
+      }
+      const data = await res.json();
+      const blocks = data.content || [];
+      return blocks.filter(b=>b.type==='text').map(b=>b.text).join('\n\n').trim();
+    }
+
+    // custom proxy: send a simple, provider-agnostic contract and expect { text: "..." } back
+    const res = await fetch(aiConfig.customUrl, {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({
+        prompt: userPrompt,
+        model: aiConfig.model || undefined,
+        apiKey: aiConfig.apiKey || undefined,
+        useWebSearch: !!opts.useWebSearch,
+        maxTokens: opts.maxTokens || 1200
+      })
+    });
+    if(!res.ok){
+      let detail = ''; try{ detail = (await res.text()).slice(0,220); }catch(e){}
+      throw new Error('Proxy request failed (' + res.status + '). ' + detail);
+    }
+    const data = await res.json();
+    if(typeof data.text === 'string') return data.text.trim();
+    if(typeof data === 'string') return data.trim();
+    throw new Error('Proxy response did not include a "text" field. Have your proxy return {"text": "..."}.');
+  }catch(err){
+    if(err instanceof TypeError){
+      throw new Error('Could not reach the AI endpoint (network or CORS block). If direct browser calls are blocked, use a custom proxy URL instead.');
+    }
+    throw err;
+  }
+}
+function extractJson(text){
+  const match = text.match(/\{[\s\S]*\}/);
+  if(!match) return null;
+  try{ return JSON.parse(match[0]); }catch(e){ return null; }
+}
+function escapeHtml(s){
+  return String(s==null?'':s).replace(/[&<>]/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
+}
+
+/* ============================= AI: PERFORMANCE ANALYSIS ============================= */
+function buildFundraiserSnapshot(f, c){
+  const byChannel = {};
+  c.txns.forEach(t=>{ const ch = t.channel || '(unspecified)'; byChannel[ch] = round2((byChannel[ch]||0) + Number(t.amount||0)); });
+  return {
+    id: f.id, name: f.name, event: f.event, goal: f.goal, currentRaised: c.currentRaised,
+    percentRaised: c.percentRaised, daysAvailable: c.daysAvailable, daysRemaining: c.daysRemaining,
+    percentOfTimeElapsed: c.daysAvailable>0 ? round2(100*(1-(c.daysRemaining||0)/c.daysAvailable)) : null,
+    requiredDaily: c.requiredDaily, actualDaily: c.actualDaily, projectedFinal: c.projectedFinal,
+    status: c.status, numTxns: c.numTxns, avgTxn: c.avgTxn, revenueByChannel: byChannel,
+    audience: f.audience, geo: f.geo, budget: f.budget, volunteers: f.volunteers, purpose: f.purpose
+  };
+}
+async function runAiPerformanceAnalysis(){
+  const out = document.getElementById('aiPerfOutput');
+  const active = state.fundraisers.filter(f=>!f.closed);
+  if(active.length===0){ out.innerHTML = '<p class="hint">No active fundraisers to analyze yet.</p>'; return; }
+  out.innerHTML = '<p class="hint">Analyzing…</p>';
+  try{
+    const snapshots = active.map(f=>buildFundraiserSnapshot(f, computeFundraiser(f)));
+    const historySummary = state.historical.map(h=>({name:h.name,type:h.type,goal:h.goal,raised:h.raised,net:h.net,duration:h.duration,bestChannel:h.bestChannel,outcome:h.outcome}));
+    const prompt = `You are a fundraising performance analyst for a small nonprofit called SOL. Analyze the JSON snapshot of currently active fundraisers below, plus SOL's historical completed fundraisers for context.
+
+For each active fundraiser, write 2-4 sentences that: compare percent of goal raised to percent of the fundraising period elapsed (never judge by percent raised alone), name the best-performing revenue channel if channelTotals data exists, state whether current pace suggests finishing above, at, or below goal, and give one concrete suggested change only if it's behind pace or at risk. Then write a short overall SOL-wide summary (2-3 sentences).
+
+Ground every claim only in the numbers provided. Do not invent facts. If historical data is too thin to compare against, say so plainly instead of guessing. Respond with ONLY raw JSON, no markdown code fences, no preamble, in exactly this shape:
+{"fundraisers":[{"id":"FR-0001","insight":"..."}],"overall":"..."}
+
+ACTIVE FUNDRAISERS:
+${JSON.stringify(snapshots, null, 2)}
+
+SOL HISTORICAL COMPLETED FUNDRAISERS:
+${JSON.stringify(historySummary, null, 2)}`;
+    const raw = await callAI(prompt, { maxTokens:1800 });
+    const parsed = extractJson(raw);
+    if(!parsed){
+      out.innerHTML = `<div class="alert-box alert-behind">Couldn't parse the AI response as structured data. Raw output below.<br><br>${escapeHtml(raw)}</div>`;
+      return;
+    }
+    let html = '';
+    if(parsed.overall) html += `<div class="alert-box alert-milestone"><strong>SOL-wide (AI-generated):</strong> ${escapeHtml(parsed.overall)}</div>`;
+    (parsed.fundraisers||[]).forEach(item=>{
+      const f = state.fundraisers.find(x=>x.id===item.id);
+      html += `<div class="rank-item"><h4>${escapeHtml(f?f.name:item.id)} <span class="badge status-completed">AI insight</span></h4><div class="why" style="color:var(--ink);">${escapeHtml(item.insight)}</div></div>`;
+    });
+    out.innerHTML = html || '<p class="hint">No insights returned.</p>';
+  }catch(err){
+    out.innerHTML = `<div class="alert-box alert-behind">${escapeHtml(err.message)}</div>`;
+  }
+}
+async function runAiFundraiserInsight(id){
+  const f = state.fundraisers.find(x=>x.id===id);
+  const out = document.getElementById('aiFundraiserInsightOutput');
+  if(!f || !out) return;
+  out.innerHTML = '<p class="hint">Analyzing…</p>';
+  try{
+    const snap = buildFundraiserSnapshot(f, computeFundraiser(f));
+    const historySummary = state.historical
+      .filter(h=>h.type===f.event || h.name===f.name)
+      .map(h=>({name:h.name,goal:h.goal,raised:h.raised,net:h.net,duration:h.duration,bestChannel:h.bestChannel,outcome:h.outcome}));
+    const prompt = `You are a fundraising performance analyst. Given this single fundraiser's data and any similarly-themed past SOL fundraisers, write a short analysis (3-5 sentences): pace vs. time elapsed, the best-performing channel if channel data exists, likely outcome at current pace, and one concrete recommended change only if needed. Ground every statement only in the data given — do not invent facts, and don't state estimates as guarantees. Respond in plain text, no JSON, no markdown headers.
+
+FUNDRAISER:
+${JSON.stringify(snap, null, 2)}
+
+SIMILAR PAST SOL FUNDRAISERS:
+${JSON.stringify(historySummary, null, 2)}`;
+    const raw = await callAI(prompt, { maxTokens:500 });
+    out.innerHTML = `<div class="alert-box alert-milestone" style="margin-top:1rem;"><strong>AI insight:</strong> ${escapeHtml(raw)}</div>`;
+  }catch(err){
+    out.innerHTML = `<div class="alert-box alert-behind" style="margin-top:1rem;">${escapeHtml(err.message)}</div>`;
+  }
+}
+
+/* ============================= AI: STRATEGY ENHANCEMENT ============================= */
+async function runAiStrategyEnhance(){
+  const out = document.getElementById('aiStrategyOutput');
+  if(!lastStrategyCtx){ showToast('Run "Get recommendation" first.'); return; }
+  out.innerHTML = '<p class="hint">Researching…</p>';
+  try{
+    const fid = document.getElementById('sa-fundraiser').value;
+    const f = fid ? state.fundraisers.find(x=>x.id===fid) : null;
+    const historySummary = state.historical.map(h=>({name:h.name,type:h.type,goal:h.goal,raised:h.raised,net:h.net,bestChannel:h.bestChannel,outcome:h.outcome}));
+    const prompt = `You are a nonprofit fundraising strategist helping a small organization called SOL. A deterministic rule-based system already produced the recommendation summarized below.
+
+Your job:
+1. Sanity-check that ranking against your knowledge of fundraising platforms and channel performance. If you have access to a live web search tool, use it for anything time-sensitive (current well-regarded peer-to-peer/crowdfunding platforms, seasonal fundraising patterns for the relevant time of year) — otherwise reason from your general knowledge and say so.
+2. Say plainly where you agree with the rule-based ranking and where you'd adjust it, and why.
+3. Clearly separate VERIFIED facts (e.g. something found via search), REASONABLE ESTIMATES, and ASSUMPTIONS. Never present an estimate as a guaranteed result.
+4. Prioritize SOL's own historical results over generic advice whenever SOL has relevant history.
+5. Keep it concise — one short paragraph, 150-300 words, plain text, no markdown headers, no JSON.
+
+CONTEXT:
+${JSON.stringify(lastStrategyCtx.ctx, null, 2)}
+${f ? 'FUNDRAISER PURPOSE: ' + f.purpose + '\nPREVIOUS RESULTS NOTE: ' + (f.previous || 'none provided') : ''}
+
+RULE-BASED TOP METHODS: ${lastStrategyCtx.rankedMethods.map(m=>m.name).join(', ')}
+RULE-BASED TOP CHANNELS: ${lastStrategyCtx.rankedChannels.map(c=>c.name).join(', ')}
+
+SOL HISTORICAL RESULTS:
+${JSON.stringify(historySummary, null, 2)}`;
+    const raw = await callAI(prompt, { useWebSearch:true, maxTokens:900 });
+    out.innerHTML = `<div class="card">
+      <h3 style="font-size:1.05rem;">AI research &amp; second opinion <span class="badge status-completed">AI-generated</span></h3>
+      <p style="font-size:.9rem;line-height:1.65;">${escapeHtml(raw).replace(/\n/g,'<br>')}</p>
+      <p class="hint">Uses your API key and, in Anthropic mode, may run a live web search. Treat as planning input, not a guarantee — cross-check anything cited as fact before relying on it.</p>
+    </div>`;
+  }catch(err){
+    out.innerHTML = `<div class="alert-box alert-behind">${escapeHtml(err.message)}</div>`;
+  }
+}
+
+/* ============================= DATA EXPORT / IMPORT ============================= */
+function exportData(){
+  const blob = new Blob([JSON.stringify(state, null, 2)], {type:'application/json'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'sol-fundraising-backup-' + todayStr() + '.json';
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+  showToast('Backup downloaded.');
+}
+function importData(){
+  const input = document.getElementById('importFile');
+  if(!input.files.length){ showToast('Choose a backup file first.'); return; }
+  const reader = new FileReader();
+  reader.onload = function(e){
+    try{
+      const data = JSON.parse(e.target.result);
+      if(!data.fundraisers || !data.transactions || !data.expenses){ throw new Error('missing fields'); }
+      state = {
+        fundraisers: data.fundraisers||[],
+        transactions: data.transactions||[],
+        expenses: data.expenses||[],
+        historical: data.historical||[]
+      };
+      openDetailId = null;
+      showToast('Backup loaded.');
+      renderAll();
+    }catch(err){
+      showToast('That file doesn\'t look like a valid backup.');
+    }
+  };
+  reader.readAsText(input.files[0]);
+}
+function resetAll(){
+  if(!confirm('Clear all fundraisers, activity, and history? This cannot be undone.')) return;
+  state = {fundraisers:[], transactions:[], expenses:[], historical:[]};
+  openDetailId = null;
+  showToast('All data cleared.');
+  renderAll();
+}
+
+/* ============================= RENDER ALL ============================= */
+function renderAll(){
+  renderDashboard();
+  renderFundraisers();
+  renderLogForm();
+  renderActivity();
+  refreshStrategySelect();
+  renderHistory();
+}
+renderAll();
+populateAiSettingsForm();
+</script>
+</body>
+</html>
